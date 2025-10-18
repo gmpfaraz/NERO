@@ -53,12 +53,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, statistics, onDelete
         
         <div className="flex space-x-2">
           {project.entryTypes.includes('akra') && (
-            <span className="px-2 py-1 text-xs font-medium bg-accent bg-opacity-10 text-accent rounded">
+            <span className="px-3 py-1 text-xs font-semibold bg-accent-teal bg-opacity-10 text-accent-teal rounded-full">
               Akra
             </span>
           )}
           {project.entryTypes.includes('ring') && (
-            <span className="px-2 py-1 text-xs font-medium bg-secondary bg-opacity-10 text-secondary rounded">
+            <span className="px-3 py-1 text-xs font-semibold bg-accent-purple bg-opacity-10 text-accent-purple rounded-full">
               Ring
             </span>
           )}
@@ -105,7 +105,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, statistics, onDelete
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div
-            className="bg-secondary rounded-full h-2 transition-all duration-300"
+            className="bg-primary rounded-full h-2 transition-all duration-300"
             style={{ width: `${Math.min(progressPercentage, 100)}%` }}
           />
         </div>
@@ -121,13 +121,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, statistics, onDelete
           <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={handleCancel}
-              className="text-xs px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="text-xs px-3 py-1 bg-background-lightSecondary dark:bg-gray-700 text-text-primary dark:text-gray-300 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
-              className="text-xs px-3 py-1 bg-danger text-white rounded hover:bg-red-600 transition-colors"
+              className="text-xs px-3 py-1 bg-danger text-white rounded-full hover:bg-red-600 transition-colors"
             >
               Confirm Delete
             </button>

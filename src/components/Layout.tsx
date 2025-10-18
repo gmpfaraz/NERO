@@ -8,9 +8,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, header, footer }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex flex-col bg-background-lightSecondary dark:bg-gray-900">
       {header && (
-        <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <header className="bg-white dark:bg-secondary shadow-sm border-b border-gray-200 dark:border-gray-700 rounded-b-3xl">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {header}
           </div>
@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children, header, footer }) => {
       </main>
       
       {footer && (
-        <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <footer className="bg-white dark:bg-secondary border-t border-gray-200 dark:border-gray-700 rounded-t-3xl">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             {footer}
           </div>
