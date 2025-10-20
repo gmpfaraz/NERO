@@ -1,15 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import ProjectHeader from '../components/ProjectHeader';
-import TabNavigation from '../components/TabNavigation';
 import EntryPanel from '../components/EntryPanel';
 import FloatingActionButton from '../components/FloatingActionButton';
 import { useTransactions } from '../hooks/useTransactions';
+import { useHistory } from '../hooks/useHistory';
+import { useUserBalance } from '../hooks/useUserBalance';
 import { groupTransactionsByNumber } from '../utils/transactionHelpers';
 import { getProject } from '../utils/storage';
-import type { TabItem, EntryType } from '../types';
-
-type SignType = 'greater' | 'less' | 'equal' | 'greater_equal' | 'less_equal';
+import type { EntryType } from '../types';
 
 const AdvancedFilter: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,16 +16,27 @@ const AdvancedFilter: React.FC = () => {
   const [entryPanelOpen, setEntryPanelOpen] = useState(false);
   
   // Filter states
-  const [firstSign, setFirstSign] = useState<SignType>('greater');
   const [firstNumbers, setFirstNumbers] = useState('');
-  const [firstLimit, setFirstLimit] = useState('2000');
-  
-  const [secondSign, setSecondSign] = useState<SignType>('greater');
   const [secondNumbers, setSecondNumbers] = useState('');
-  const [secondLimit, setSecondLimit] = useState('2000');
   
   const project = getProject(id || '');
-  const { transactions, refresh } = useTransactions(id || '');
+  const { 
+    transactions, 
+    refresh: refreshTransactions, 
+    addTransaction
+  } = useTransactions(id || '');
+  const { refresh: refreshBalance } = useUserBalance();
+  
+  const { addAction } = useHistory(id || '', {
+    onRevert: () => {},
+    onApply: () => {},
+  });
+  
+  // Comprehensive refresh function
+  const refresh = () => {
+    refreshTransactions();
+    refreshBalance();
+  };
 
   // Group transactions
   const summaries = useMemo(
@@ -34,77 +44,93 @@ const AdvancedFilter: React.FC = () => {
     [transactions, selectedType]
   );
 
-  // Parse numbers from input (comma or space separated)
-  const parseNumbers = (input: string): string[] => {
-    return input
-      .split(/[\s,]+/)
-      .map(n => n.trim())
-      .filter(n => n !== '');
-  };
-
-  // Apply filter logic
-  const applySignFilter = (amount: number, sign: SignType, numbers: string[]): boolean => {
-    if (numbers.length === 0) return false;
-
-    switch (sign) {
-      case 'greater':
-        return numbers.some(n => amount > parseFloat(n));
-      case 'less':
-        return numbers.some(n => amount < parseFloat(n));
-      case 'equal':
-        return numbers.some(n => amount === parseFloat(n));
-      case 'greater_equal':
-        return numbers.some(n => amount >= parseFloat(n));
-      case 'less_equal':
-        return numbers.some(n => amount <= parseFloat(n));
-      default:
-        return false;
+  // Advanced search filter for numbers with wildcard and command support
+  const matchesSearch = (number: string, query: string): boolean => {
+    if (!query) return false;
+    
+    const trimmedQuery = query.trim().toLowerCase();
+    const lowerNumber = number.toLowerCase();
+    
+    // Command: starts:
+    if (trimmedQuery.startsWith('starts:')) {
+      const searchPattern = trimmedQuery.replace('starts:', '');
+      return lowerNumber.startsWith(searchPattern);
     }
+    
+    // Command: ends:
+    if (trimmedQuery.startsWith('ends:')) {
+      const searchPattern = trimmedQuery.replace('ends:', '');
+      return lowerNumber.endsWith(searchPattern);
+    }
+    
+    // Command: middle: (only for Ring - 3 digit numbers)
+    if (trimmedQuery.startsWith('middle:')) {
+      const searchPattern = trimmedQuery.replace('middle:', '');
+      if (lowerNumber.length === 3) {
+        return lowerNumber.charAt(1) === searchPattern;
+      }
+      return false;
+    }
+    
+    // Wildcard: starts with (e.g., "1*")
+    if (trimmedQuery.endsWith('*') && !trimmedQuery.startsWith('*')) {
+      const searchPattern = trimmedQuery.slice(0, -1);
+      return lowerNumber.startsWith(searchPattern);
+    }
+    
+    // Wildcard: ends with (e.g., "*3")
+    if (trimmedQuery.startsWith('*') && !trimmedQuery.endsWith('*')) {
+      const searchPattern = trimmedQuery.slice(1);
+      return lowerNumber.endsWith(searchPattern);
+    }
+    
+    // Wildcard: starts and ends (e.g., "1*3")
+    if (trimmedQuery.includes('*')) {
+      const parts = trimmedQuery.split('*');
+      if (parts.length === 2) {
+        const startPart = parts[0];
+        const endPart = parts[1];
+        return lowerNumber.startsWith(startPart) && lowerNumber.endsWith(endPart);
+      }
+    }
+    
+    // Simple contains search
+    return lowerNumber.includes(trimmedQuery);
   };
 
   // Filter results for First
   const firstFilteredResults = useMemo(() => {
-    const numbers = parseNumbers(firstNumbers);
-    if (numbers.length === 0) return [];
-
-    const limit = parseFloat(firstLimit) || 2000;
+    if (!firstNumbers.trim()) return [];
+    
     const results: Array<{ number: string; amount: number }> = [];
-
     summaries.forEach((summary, number) => {
-      if (summary.firstTotal > 0 && summary.firstTotal <= limit) {
-        if (applySignFilter(summary.firstTotal, firstSign, numbers)) {
-          results.push({
-            number,
-            amount: summary.firstTotal,
-          });
-        }
+      if (summary.firstTotal > 0 && matchesSearch(number, firstNumbers)) {
+        results.push({
+          number,
+          amount: summary.firstTotal,
+        });
       }
     });
 
     return results.sort((a, b) => a.number.localeCompare(b.number));
-  }, [summaries, firstSign, firstNumbers, firstLimit]);
+  }, [summaries, firstNumbers]);
 
   // Filter results for Second
   const secondFilteredResults = useMemo(() => {
-    const numbers = parseNumbers(secondNumbers);
-    if (numbers.length === 0) return [];
-
-    const limit = parseFloat(secondLimit) || 2000;
+    if (!secondNumbers.trim()) return [];
+    
     const results: Array<{ number: string; amount: number }> = [];
-
     summaries.forEach((summary, number) => {
-      if (summary.secondTotal > 0 && summary.secondTotal <= limit) {
-        if (applySignFilter(summary.secondTotal, secondSign, numbers)) {
-          results.push({
-            number,
-            amount: summary.secondTotal,
-          });
-        }
+      if (summary.secondTotal > 0 && matchesSearch(number, secondNumbers)) {
+        results.push({
+          number,
+          amount: summary.secondTotal,
+        });
       }
     });
 
     return results.sort((a, b) => a.number.localeCompare(b.number));
-  }, [summaries, secondSign, secondNumbers, secondLimit]);
+  }, [summaries, secondNumbers]);
 
   // Copy function with special formatting
   const copyFirstResults = () => {
@@ -141,42 +167,92 @@ const AdvancedFilter: React.FC = () => {
     });
   };
 
-  // Copy just numbers
-  const copyFirstNumbers = () => {
+  // Deduct functions
+  const deductFirstResults = async () => {
     if (firstFilteredResults.length === 0) {
-      alert('No results to copy!');
+      alert('No results to deduct!');
       return;
     }
 
-    const numbers = firstFilteredResults.map(r => r.number).join(', ');
-    navigator.clipboard.writeText(numbers).then(() => {
-      alert(`✓ Copied ${firstFilteredResults.length} numbers to clipboard!`);
-    }).catch(() => {
-      alert('Failed to copy to clipboard');
-    });
+    const confirmDeduct = window.confirm(
+      `Are you sure you want to deduct ${firstFilteredResults.length} First entries?`
+    );
+
+    if (!confirmDeduct) return;
+
+    try {
+      const affectedNumbers: string[] = [];
+
+      // Create deduction transactions for each result
+      for (const result of firstFilteredResults) {
+        const deductionTransaction = {
+          projectId: id || '',
+          number: result.number,
+          entryType: selectedType,
+          first: -result.amount, // Negative amount for deduction
+          second: 0,
+          notes: `Deducted from Advanced Filter - First`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        await addTransaction(deductionTransaction);
+        affectedNumbers.push(result.number);
+      }
+
+      // Record in history
+      addAction('filter', `Applied first deductions to ${firstFilteredResults.length} numbers`, affectedNumbers);
+
+      alert(`✓ Successfully deducted ${firstFilteredResults.length} First entries!`);
+      refresh();
+    } catch (error) {
+      console.error('Error deducting first results:', error);
+      alert('Failed to deduct entries. Please try again.');
+    }
   };
 
-  const copySecondNumbers = () => {
+  const deductSecondResults = async () => {
     if (secondFilteredResults.length === 0) {
-      alert('No results to copy!');
+      alert('No results to deduct!');
       return;
     }
 
-    const numbers = secondFilteredResults.map(r => r.number).join(', ');
-    navigator.clipboard.writeText(numbers).then(() => {
-      alert(`✓ Copied ${secondFilteredResults.length} numbers to clipboard!`);
-    }).catch(() => {
-      alert('Failed to copy to clipboard');
-    });
-  };
+    const confirmDeduct = window.confirm(
+      `Are you sure you want to deduct ${secondFilteredResults.length} Second entries?`
+    );
 
-  const tabs: TabItem[] = [
-    { id: 'dashboard', label: 'Dashboard', path: `/project/${id}` },
-    { id: 'akra', label: 'Akra (00)', path: `/project/${id}/akra` },
-    { id: 'ring', label: 'Ring (000)', path: `/project/${id}/ring` },
-    { id: 'advanced', label: 'Advanced Filter', path: `/project/${id}/advanced-filter` },
-    { id: 'history', label: 'History', path: `/project/${id}/history` },
-  ];
+    if (!confirmDeduct) return;
+
+    try {
+      const affectedNumbers: string[] = [];
+
+      // Create deduction transactions for each result
+      for (const result of secondFilteredResults) {
+        const deductionTransaction = {
+          projectId: id || '',
+          number: result.number,
+          entryType: selectedType,
+          first: 0,
+          second: -result.amount, // Negative amount for deduction
+          notes: `Deducted from Advanced Filter - Second`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        await addTransaction(deductionTransaction);
+        affectedNumbers.push(result.number);
+      }
+
+      // Record in history
+      addAction('filter', `Applied second deductions to ${secondFilteredResults.length} numbers`, affectedNumbers);
+
+      alert(`✓ Successfully deducted ${secondFilteredResults.length} Second entries!`);
+      refresh();
+    } catch (error) {
+      console.error('Error deducting second results:', error);
+      alert('Failed to deduct entries. Please try again.');
+    }
+  };
 
   if (!project) {
     return (
@@ -188,248 +264,164 @@ const AdvancedFilter: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <ProjectHeader projectName={project.name} projectDate={project.date} />
+      <ProjectHeader 
+        projectName={project.name} 
+        projectDate={project.date} 
+        projectId={id}
+        onRefresh={refresh}
+      />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <TabNavigation tabs={tabs} baseClass="mb-6" />
 
-        {/* Type Selection */}
-        <div className="card mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">
             🔍 Advanced Filter & Calculator
-          </h2>
-          <div className="flex gap-3 mb-4">
-            <button
-              onClick={() => setSelectedType('akra')}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                selectedType === 'akra'
-                  ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              Akra (00-99)
-            </button>
-            <button
-              onClick={() => setSelectedType('ring')}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                selectedType === 'ring'
-                  ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              Ring (000-999)
-            </button>
-          </div>
+          </h1>
+          <p className="text-gray-400">
+            Search and filter numbers based on amount conditions
+          </p>
         </div>
 
-        {/* First Filter Section */}
-        <div className="card mb-6">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              💰 First Amount Filter
-            </h3>
-            {firstFilteredResults.length > 0 && (
-              <div className="flex gap-2">
-                <button
-                  onClick={copyFirstNumbers}
-                  className="btn-secondary text-sm flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                  </svg>
-                  Copy Numbers
-                </button>
-                <button
-                  onClick={copyFirstResults}
-                  className="btn-primary text-sm flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Copy Data ({firstFilteredResults.length})
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Type Selection */}
+        <div className="flex gap-3 mb-6">
+          <button
+            onClick={() => setSelectedType('akra')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              selectedType === 'akra'
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            Akra (00-99)
+          </button>
+          <button
+            onClick={() => setSelectedType('ring')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              selectedType === 'ring'
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            Ring (000-999)
+          </button>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Sign Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Select Sign
-              </label>
-              <select
-                value={firstSign}
-                onChange={(e) => setFirstSign(e.target.value as SignType)}
-                className="input-field"
-              >
-                <option value="greater">{'>'} Greater than</option>
-                <option value="less">{'<'} Less than</option>
-                <option value="equal">= Equal to</option>
-                <option value="greater_equal">≥ Greater or equal</option>
-                <option value="less_equal">≤ Less or equal</option>
-              </select>
+        {/* Two-Panel Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* FIRST Panel */}
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-2xl font-bold text-green-400">
+                FIRST
+              </h3>
+              {firstFilteredResults.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={copyFirstResults}
+                    className="p-2 text-gray-400 hover:text-white transition-colors"
+                    title="Copy"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={deductFirstResults}
+                    className="p-2 text-red-400 hover:text-red-300 transition-colors"
+                    title="Deduct"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Numbers Input */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Enter Numbers (comma or space separated)
-              </label>
-              <input
-                type="text"
-                value={firstNumbers}
-                onChange={(e) => setFirstNumbers(e.target.value)}
-                placeholder="e.g. 100, 500, 1000"
-                className="input-field"
-              />
-            </div>
+            <input
+              type="text"
+              value={firstNumbers}
+              onChange={(e) => setFirstNumbers(e.target.value)}
+              placeholder="e.g., 5, 1*, *3, starts:8, ends:0"
+              className="w-full bg-gray-900 text-gray-300 border-none rounded-lg px-4 py-3 mb-4 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
 
-            {/* Limit */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Maximum Limit
-              </label>
-              <input
-                type="number"
-                value={firstLimit}
-                onChange={(e) => setFirstLimit(e.target.value)}
-                placeholder="2000"
-                className="input-field"
-              />
-            </div>
-          </div>
-
-          {/* First Results */}
-          {firstFilteredResults.length > 0 && (
-            <div className="mt-4">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 max-h-96 overflow-y-auto">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {/* First Results */}
+            <div className="bg-gray-900 rounded-lg p-4 min-h-[300px]">
+              {firstFilteredResults.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No matching numbers found.</p>
+              ) : (
+                <div className="space-y-1">
                   {firstFilteredResults.map((result) => (
                     <div
                       key={result.number}
-                      className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600"
+                      className="text-gray-300 hover:text-white hover:bg-gray-800 px-3 py-2 rounded transition-colors"
                     >
-                      <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                        {result.number}
-                      </div>
-                      <div className="text-sm text-green-600 dark:text-green-400 font-semibold">
-                        F {result.amount}
-                      </div>
+                      {result.number} - {result.amount}
                     </div>
                   ))}
                 </div>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Found {firstFilteredResults.length} numbers matching your filter
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Second Filter Section */}
-        <div className="card mb-6">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              💎 Second Amount Filter
-            </h3>
-            {secondFilteredResults.length > 0 && (
-              <div className="flex gap-2">
-                <button
-                  onClick={copySecondNumbers}
-                  className="btn-secondary text-sm flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                  </svg>
-                  Copy Numbers
-                </button>
-                <button
-                  onClick={copySecondResults}
-                  className="btn-primary text-sm flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Copy Data ({secondFilteredResults.length})
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Sign Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Select Sign
-              </label>
-              <select
-                value={secondSign}
-                onChange={(e) => setSecondSign(e.target.value as SignType)}
-                className="input-field"
-              >
-                <option value="greater">{'>'} Greater than</option>
-                <option value="less">{'<'} Less than</option>
-                <option value="equal">= Equal to</option>
-                <option value="greater_equal">≥ Greater or equal</option>
-                <option value="less_equal">≤ Less or equal</option>
-              </select>
-            </div>
-
-            {/* Numbers Input */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Enter Numbers (comma or space separated)
-              </label>
-              <input
-                type="text"
-                value={secondNumbers}
-                onChange={(e) => setSecondNumbers(e.target.value)}
-                placeholder="e.g. 100, 500, 1000"
-                className="input-field"
-              />
-            </div>
-
-            {/* Limit */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Maximum Limit
-              </label>
-              <input
-                type="number"
-                value={secondLimit}
-                onChange={(e) => setSecondLimit(e.target.value)}
-                placeholder="2000"
-                className="input-field"
-              />
+              )}
             </div>
           </div>
 
-          {/* Second Results */}
-          {secondFilteredResults.length > 0 && (
-            <div className="mt-4">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 max-h-96 overflow-y-auto">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {/* SECOND Panel */}
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-2xl font-bold text-blue-400">
+                SECOND
+              </h3>
+              {secondFilteredResults.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={copySecondResults}
+                    className="p-2 text-gray-400 hover:text-white transition-colors"
+                    title="Copy"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={deductSecondResults}
+                    className="p-2 text-red-400 hover:text-red-300 transition-colors"
+                    title="Deduct"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <input
+              type="text"
+              value={secondNumbers}
+              onChange={(e) => setSecondNumbers(e.target.value)}
+              placeholder="e.g., 5, 1*, *3, starts:8, ends:0"
+              className="w-full bg-gray-900 text-gray-300 border-none rounded-lg px-4 py-3 mb-4 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            {/* Second Results */}
+            <div className="bg-gray-900 rounded-lg p-4 min-h-[300px]">
+              {secondFilteredResults.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No matching numbers found.</p>
+              ) : (
+                <div className="space-y-1">
                   {secondFilteredResults.map((result) => (
                     <div
                       key={result.number}
-                      className="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600"
+                      className="text-gray-300 hover:text-white hover:bg-gray-800 px-3 py-2 rounded transition-colors"
                     >
-                      <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                        {result.number}
-                      </div>
-                      <div className="text-sm text-blue-600 dark:text-blue-400 font-semibold">
-                        S {result.amount}
-                      </div>
+                      {result.number} - {result.amount}
                     </div>
                   ))}
                 </div>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Found {secondFilteredResults.length} numbers matching your filter
-              </p>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Help Section */}
@@ -438,16 +430,28 @@ const AdvancedFilter: React.FC = () => {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            How to Use
+            How to Use Advanced Search
           </h3>
-          <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-            <p>1. <strong>Select Type:</strong> Choose Akra (00-99) or Ring (000-999)</p>
-            <p>2. <strong>Select Sign:</strong> Choose comparison operator {'(>, <, =, ≥, ≤)'}</p>
-            <p>3. <strong>Enter Numbers:</strong> Type numbers separated by commas or spaces</p>
-            <p>4. <strong>Set Limit:</strong> Maximum amount to include (default 2000)</p>
-            <p>5. <strong>Copy Results:</strong> Click Copy button to copy formatted data</p>
+          <div className="space-y-3 text-sm text-blue-800 dark:text-blue-200">
+            <div>
+              <p className="font-semibold mb-2">Search Patterns:</p>
+              <ul className="space-y-1 ml-4">
+                <li><strong>Contains:</strong> Type <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/60 rounded">5</code> to find any number containing &quot;5&quot; (e.g., 05, 15, 50, 55)</li>
+                <li><strong>Starts with:</strong> Type <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/60 rounded">1*</code> to find numbers starting with &quot;1&quot; (e.g., 10, 11, 12...)</li>
+                <li><strong>Ends with:</strong> Type <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/60 rounded">*3</code> to find numbers ending with &quot;3&quot; (e.g., 03, 13, 23...)</li>
+                <li><strong>Starts & Ends:</strong> Type <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/60 rounded">1*3</code> to find numbers starting with &quot;1&quot; and ending with &quot;3&quot;</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold mb-2">Commands:</p>
+              <ul className="space-y-1 ml-4">
+                <li><strong>starts:</strong> Type <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/60 rounded">starts:8</code> to find numbers starting with &quot;8&quot;</li>
+                <li><strong>ends:</strong> Type <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/60 rounded">ends:0</code> to find numbers ending with &quot;0&quot;</li>
+                <li><strong>middle:</strong> (Ring only) Type <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/60 rounded">middle:4</code> to find 3-digit numbers with &quot;4&quot; in the middle</li>
+              </ul>
+            </div>
             <p className="mt-3 p-2 bg-blue-100 dark:bg-blue-900/40 rounded">
-              <strong>Copy Format:</strong> Data will be copied with tab separation and &quot;F&quot; prefix for First, &quot;S&quot; prefix for Second amounts
+              <strong>Copy Format:</strong> Click the copy button to copy results with tab separation and &quot;F&quot; prefix for First, &quot;S&quot; prefix for Second amounts
             </p>
           </div>
         </div>

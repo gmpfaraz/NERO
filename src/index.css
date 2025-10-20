@@ -108,16 +108,20 @@ body {
   font-family: var(--font-family-sans);
   font-feature-settings: 'cv11', 'ss01', 'zero';
   text-rendering: optimizeLegibility;
-  /* Light Mode - Pure White Background */
-  background: var(--color-bg-light-primary);
-  background-attachment: fixed;
-  color: var(--color-text-light-primary);
   min-height: 100vh;
   position: relative;
 }
 
+/* Light Mode Styles */
+body.light {
+  /* Light Mode - Pure White Background */
+  background: var(--color-bg-light-primary);
+  background-attachment: fixed;
+  color: var(--color-text-light-primary);
+}
+
 /* Subtle light mode background pattern */
-body::before {
+body.light::before {
   content: '';
   position: fixed;
   top: 0;
@@ -131,7 +135,7 @@ body::before {
   z-index: 0;
 }
 
-body > * {
+body.light > * {
   position: relative;
   z-index: 1;
 }
@@ -2346,6 +2350,104 @@ button:active, a:active {
 
 .dark .divider-vertical {
   background: var(--color-border-dark);
+}
+
+/* ================================
+   NOTIFICATION SYSTEM ANIMATIONS
+   ================================ */
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-bottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* Mobile-specific animations */
+@keyframes slide-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-mobile {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.animate-slide-out {
+  animation: slide-out 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s ease-out;
+}
+
+.animate-slide-out-bottom {
+  animation: slide-out-bottom 0.3s ease-out;
+}
+
+/* Mobile responsive animations */
+@media (max-width: 640px) {
+  .animate-slide-in {
+    animation: slide-in-mobile 0.3s ease-out;
+  }
+  
+  .animate-slide-out {
+    animation: slide-out-mobile 0.3s ease-out;
+  }
 }
 
 /* ================================

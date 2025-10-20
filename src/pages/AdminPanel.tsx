@@ -7,14 +7,15 @@ import ThemeToggle from '../components/ThemeToggle';
 import AdminFinancial from './admin/AdminFinancial';
 import AdminReports from './admin/AdminReports';
 import AnimatedNumber from '../components/AnimatedNumber';
+import type { UserAccount } from '../types/admin';
 
 const AdminPanel: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, loading: authLoading } = useAdmin();
-  const { users, stats, loading, topUpBalance, deleteUser, refresh } = useAdminData();
+  const { users, reports, stats, loading, topUpBalance, deleteUser, refresh } = useAdminData();
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [selectedUserData, setSelectedUserData] = useState<any>(null);
+  const [selectedUserData, setSelectedUserData] = useState<UserAccount & { projectsCount?: number; totalEntries?: number } | null>(null);
   const [topUpAmount, setTopUpAmount] = useState('');
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
@@ -66,8 +67,15 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleViewDetails = (userData: any) => {
-    setSelectedUserData(userData);
+  const handleViewDetails = (userData: UserAccount & { projectsCount?: number; totalEntries?: number }) => {
+    // Find the corresponding report data with project counts
+    const userReport = reports.find(r => r.userId === userData.userId);
+    const enrichedData = {
+      ...userData,
+      projectsCount: userReport?.projectCount || 0,
+      totalEntries: userReport?.totalEntries || 0,
+    };
+    setSelectedUserData(enrichedData);
     setShowUserDetailsModal(true);
   };
 
@@ -269,53 +277,83 @@ const AdminPanel: React.FC = () => {
           </div>
 
           {/* Users Table */}
-          <div className="table-container overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">User</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Email</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Balance</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Projects
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Balance
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       No users found
                     </td>
                   </tr>
                 ) : (
-                  filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="py-4 px-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
-                            {user.displayName.charAt(0).toUpperCase()}
+                  filteredUsers.map((user) => {
+                    const userReport = reports.find(r => r.userId === user.userId);
+                    return (
+                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                              {user.displayName.charAt(0).toUpperCase()}
+                            </div>
                           </div>
-                          <span className="font-medium text-gray-900 dark:text-gray-100">{user.displayName}</span>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {user.displayName}
+                            </div>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-gray-700 dark:text-gray-300">{user.email}</td>
-                      <td className="py-4 px-4">
-                        <span className="text-lg font-bold text-gradient-primary">{user.balance.toLocaleString()} PKR</span>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 dark:text-gray-300">{user.email}</div>
                       </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.isOnline
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                        }`}>
-                          {user.isOnline ? '🟢 Online' : '⚫ Offline'}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                          {userReport?.projectCount || 0} projects
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                          {user.balance.toLocaleString()} PKR
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.isOnline
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                        }`}>
+                          {user.isOnline ? 'Online' : 'Offline'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => handleViewDetails(user)}
-                            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                             title="View Details"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -329,7 +367,7 @@ const AdminPanel: React.FC = () => {
                               setSelectedUserData(user);
                               setShowTopUpModal(true);
                             }}
-                            className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
+                            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
                             title="Top Up Balance"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,7 +376,7 @@ const AdminPanel: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleImpersonate(user.userId, user.displayName)}
-                            className="p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all"
+                            className="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300"
                             title="View User Projects"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -347,7 +385,7 @@ const AdminPanel: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleDeleteUser(user.userId, user.email)}
-                            className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                             title="Delete User"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,7 +395,8 @@ const AdminPanel: React.FC = () => {
                         </div>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>

@@ -1,34 +1,90 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ProjectHeader from '../components/ProjectHeader';
-import TabNavigation from '../components/TabNavigation';
 import NumberGrid from '../components/NumberGrid';
 import FilterTab from '../components/FilterTab';
 import TransactionModal from '../components/TransactionModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import PremiumStats from '../components/PremiumStats';
-import EntryPanel from '../components/EntryPanel';
-import FloatingActionButton from '../components/FloatingActionButton';
 import { useTransactions } from '../hooks/useTransactions';
 import { useHistory } from '../hooks/useHistory';
+import { useUserBalance } from '../hooks/useUserBalance';
 import { groupTransactionsByNumber } from '../utils/transactionHelpers';
 import { getProject } from '../utils/storage';
 import { formatDate } from '../utils/helpers';
-import type { TabItem, Transaction } from '../types';
+import { exportTransactionsToExcel, importTransactionsFromExcel } from '../utils/excelHandler';
+import { customAlertSuccess, customAlertError, customAlertWarning } from '../utils/customPopups';
+import type { Transaction } from '../types';
 
 const RingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'entries' | 'filter'>('entries');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectionMode] = useState(false);
   const [selectedNumbers, setSelectedNumbers] = useState<Set<string>>(new Set());
   const [modalNumber, setModalNumber] = useState<string | null>(null);
-  const [entryPanelOpen, setEntryPanelOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const project = getProject(id || '');
-  const { transactions, loading, refresh, deleteTransaction, updateTransaction, addTransaction } = useTransactions(id || '');
-  const { canUndo, canRedo, undo, redo, addAction } = useHistory(id || '');
+  const { 
+    transactions, 
+    loading, 
+    refresh: refreshTransactions, 
+    deleteTransaction,
+    bulkDeleteTransactions,
+    updateTransaction, 
+    addTransaction,
+  } = useTransactions(id || '');
+  
+  const { refresh: refreshBalance } = useUserBalance();
+  
+  // Comprehensive refresh function
+  const refresh = () => {
+    refreshTransactions();
+    refreshBalance();
+  };
+  
+  const { 
+    canUndo, 
+    canRedo, 
+    undo, 
+    redo, 
+    addAction 
+  } = useHistory(id || '', {
+    onRevert: async (action) => {
+      if (action.type === 'add' && action.data?.transactionId) {
+        await deleteTransaction(action.data.transactionId);
+        refresh();
+      } else if (action.type === 'delete' && action.data?.transaction) {
+        await addTransaction(action.data.transaction);
+        refresh();
+      } else if (action.type === 'edit' && action.data?.originalTransaction) {
+        await updateTransaction(action.data.transactionId, action.data.originalTransaction);
+        refresh();
+      } else if (action.type === 'batch' && action.data?.transactions) {
+        for (const t of action.data.transactions) {
+          await addTransaction(t);
+        }
+        refresh();
+      }
+    },
+    onApply: async (action) => {
+      if (action.type === 'add' && action.data?.transaction) {
+        await addTransaction(action.data.transaction);
+        refresh();
+      } else if (action.type === 'delete' && action.data?.transactionId) {
+        await deleteTransaction(action.data.transactionId);
+        refresh();
+      } else if (action.type === 'edit' && action.data?.updatedTransaction) {
+        await updateTransaction(action.data.transactionId, action.data.updatedTransaction);
+        refresh();
+      } else if (action.type === 'batch' && action.data?.transactionIds) {
+        await bulkDeleteTransactions(action.data.transactionIds);
+        refresh();
+      }
+    },
+  });
 
   // Group transactions by number
   const summaries = useMemo(
@@ -36,19 +92,12 @@ const RingPage: React.FC = () => {
     [transactions]
   );
 
-  const tabs: TabItem[] = [
-    { id: 'dashboard', label: 'Dashboard', path: `/project/${id}` },
-    { id: 'akra', label: 'Akra (00)', path: `/project/${id}/akra` },
-    { id: 'ring', label: 'Ring (000)', path: `/project/${id}/ring` },
-    { id: 'advanced', label: 'Advanced Filter', path: `/project/${id}/advanced-filter` },
-  ];
-
   const handleNumberClick = (number: string) => {
     setModalNumber(number);
   };
 
-  const handleDelete = (transactionId: string) => {
-    if (deleteTransaction(transactionId)) {
+  const handleDelete = async (transactionId: string) => {
+    if (await deleteTransaction(transactionId)) {
       addAction('delete', `Deleted transaction`, []);
       refresh();
     }
@@ -56,8 +105,11 @@ const RingPage: React.FC = () => {
 
   const handleSaveFilterResults = async (deductions: Array<{ number: string; firstAmount: number; secondAmount: number }>) => {
     // Create negative transactions for each deduction
+    const transactionIds: string[] = [];
+    const affectedNumbers: string[] = [];
+    
     for (const deduction of deductions) {
-      addTransaction({
+      const success = await addTransaction({
         projectId: id || '',
         number: deduction.number,
         entryType: 'ring',
@@ -68,9 +120,13 @@ const RingPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
         isFilterDeduction: true,
       });
+      if (success) {
+        transactionIds.push(`deduction-${Date.now()}-${Math.random()}`);
+      }
+      affectedNumbers.push(deduction.number);
     }
     
-    addAction('edit', `Applied filter deductions to ${deductions.length} number(s)`, []);
+    addAction('filter', `Applied filter deductions to ${deductions.length} number(s)`, affectedNumbers);
     refresh();
   };
 
@@ -83,73 +139,60 @@ const RingPage: React.FC = () => {
     }
   };
 
-  const handleBulkDelete = () => {
-    if (selectedNumbers.size === 0) return;
-    
-    if (!confirm(`Delete all transactions for ${selectedNumbers.size} selected numbers?`)) {
-      return;
-    }
-
-    let deletedCount = 0;
-    selectedNumbers.forEach(number => {
-      const summary = summaries.get(number);
-      if (summary) {
-        summary.transactions.forEach(t => {
-          if (deleteTransaction(t.id)) {
-            deletedCount++;
-          }
-        });
-      }
-    });
-
-    addAction('batch', `Bulk deleted ${deletedCount} transactions`, Array.from(selectedNumbers));
-    setSelectedNumbers(new Set());
-    setSelectionMode(false);
-    refresh();
-    alert(`Deleted ${deletedCount} transactions!`);
-  };
 
   const handleExport = () => {
-    const data = Array.from(summaries.values());
-    const csv = [
-      'Number,FIRST,SECOND,Total,Entries',
-      ...data.map(
-        (s) =>
-          `${s.number},${s.firstTotal},${s.secondTotal},${
-            s.firstTotal + s.secondTotal
-          },${s.entryCount}`
-      ),
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ring-export-${Date.now()}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const ringTransactions = transactions.filter(t => t.entryType === 'ring');
+    if (ringTransactions.length === 0) {
+      customAlertWarning('No Ring transactions to export!');
+      return;
+    }
+    exportTransactionsToExcel(ringTransactions, `${project?.name || 'Project'}-Ring`);
   };
 
-  const handleSelectAll = () => {
-    if (selectedNumbers.size === summaries.size) {
-      setSelectedNumbers(new Set());
-    } else {
-      setSelectedNumbers(new Set(Array.from(summaries.keys())));
+  const handleImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const result = await importTransactionsFromExcel(file, id || '', 'ring');
+
+      if (result.success && result.transactions.length > 0) {
+        for (const t of result.transactions) {
+          await addTransaction(t);
+        }
+        customAlertSuccess(`Successfully imported ${result.transactions.length} Ring transaction(s)!`);
+        refresh();
+      }
+
+      if (result.errors.length > 0) {
+        console.error('Import errors:', result.errors);
+        customAlertWarning(`Import completed with ${result.errors.length} error(s). Check console for details.`);
+      }
+
+      if (result.transactions.length === 0 && result.errors.length === 0) {
+        customAlertWarning('No Ring transactions found in the file.');
+      }
+    } catch (error) {
+      console.error('Error importing file:', error);
+      customAlertError('Failed to import file. Please make sure it\'s a valid Excel file.');
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const handleClearSelection = () => {
-    setSelectedNumbers(new Set());
-    setSelectionMode(false);
-  };
 
   const modalSummary = modalNumber ? summaries.get(modalNumber) : null;
 
   if (loading) {
     return (
-      <div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <ProjectHeader
           projectName={project?.name || 'Loading...'}
           projectDate={project ? formatDate(project.date) : ''}
@@ -175,6 +218,12 @@ const RingPage: React.FC = () => {
     );
   }
 
+  // Redirect if project doesn't support Ring
+  if (!project.entryTypes?.includes('ring')) {
+    navigate(`/project/${id}`);
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <ProjectHeader
@@ -184,10 +233,11 @@ const RingPage: React.FC = () => {
         onRedo={redo}
         canUndo={canUndo}
         canRedo={canRedo}
+        onRefresh={refresh}
+        projectId={id}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <TabNavigation tabs={tabs} baseClass="mb-6" />
 
         {/* Page Header */}
         <div className="mb-6">
@@ -238,43 +288,33 @@ const RingPage: React.FC = () => {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => setSelectionMode(!selectionMode)}
-                  className={`btn-secondary ${
-                    selectionMode ? 'ring-2 ring-secondary' : ''
-                  }`}
+                  onClick={handleImport}
+                  className="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
-                  {selectionMode ? 'Exit Selection' : 'Selection Mode'}
+                  <svg
+                    className="w-5 h-5 inline mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  📥 Import CSV
                 </button>
 
-                {selectionMode && (
-                  <>
-                    <button onClick={handleSelectAll} className="btn-secondary">
-                      {selectedNumbers.size === summaries.size
-                        ? 'Deselect All'
-                        : 'Select All'}
-                    </button>
-                    <button
-                      onClick={handleClearSelection}
-                      className="btn-secondary"
-                      disabled={selectedNumbers.size === 0}
-                    >
-                      Clear ({selectedNumbers.size})
-                    </button>
-                    <button
-                      onClick={handleBulkDelete}
-                      className="btn-danger"
-                      disabled={selectedNumbers.size === 0}
-                    >
-                      Delete Selected ({selectedNumbers.size})
-                    </button>
-                  </>
-                )}
-
-                <button onClick={handleExport} className="btn-secondary">
+                <button
+                  onClick={handleExport}
+                  className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                >
                   <svg
-                    className="w-4 h-4 inline mr-2"
+                    className="w-5 h-5 inline mr-2"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -286,30 +326,19 @@ const RingPage: React.FC = () => {
                       d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  Export CSV
-                </button>
-
-                <button
-                  onClick={() => navigate(`/project/${id}`)}
-                  className="btn-secondary"
-                >
-                  <svg
-                    className="w-4 h-4 inline mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Add Entry
+                  📤 Export CSV
                 </button>
               </div>
             </div>
+
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileChange}
+              className="hidden"
+            />
 
             {/* Premium Statistics */}
             <PremiumStats 
@@ -350,30 +379,6 @@ const RingPage: React.FC = () => {
         />
       )}
 
-      {/* Floating Action Button */}
-      <FloatingActionButton
-        onClick={() => setEntryPanelOpen(true)}
-        position="bottom-right"
-        color="accent"
-        label="Add Entry (Ctrl+E)"
-        icon={
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        }
-      />
-
-      {/* Entry Panel */}
-      <EntryPanel
-        isOpen={entryPanelOpen}
-        onClose={() => setEntryPanelOpen(false)}
-        projectId={id || ''}
-        entryType="ring"
-        onEntryAdded={() => {
-          refresh();
-          setEntryPanelOpen(false);
-        }}
-      />
     </div>
   );
 };

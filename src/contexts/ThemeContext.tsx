@@ -9,20 +9,35 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('gull-theme');
-    return (savedTheme as Theme) || 'light';
-  });
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
+    // Get theme from localStorage or default to dark
+    const savedTheme = localStorage.getItem('gull-theme') as Theme || 'dark';
+    setTheme(savedTheme);
+    
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('gull-theme', theme);
-  }, [theme]);
+    root.classList.add(savedTheme);
+    
+    // Update body class for proper styling
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(savedTheme);
+  }, []);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(newTheme);
+    
+    // Update body class for proper styling
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(newTheme);
+    
+    localStorage.setItem('gull-theme', newTheme);
   };
 
   return (

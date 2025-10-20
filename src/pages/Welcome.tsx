@@ -70,19 +70,19 @@ const Welcome: React.FC = () => {
 
   if (loading && mode === 'welcome') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-secondary">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-secondary p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2">GULL</h1>
-          <p className="text-xl text-white/90">Accounting Management System</p>
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-2">GULL</h1>
+          <p className="text-xl text-gray-700 dark:text-gray-300">Accounting Management System</p>
           {isOfflineMode() && (
             <div className="mt-4 inline-block px-4 py-2 bg-yellow-500/20 border border-yellow-400 rounded-lg">
               <p className="text-sm text-yellow-200">

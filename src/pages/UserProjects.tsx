@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
 import ThemeToggle from '../components/ThemeToggle';
 import { getAllProjects } from '../utils/storage';
+import type { Project } from '../types';
 
 const UserProjects: React.FC = () => {
   const { uid } = useParams<{ uid: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     const all = getAllProjects();

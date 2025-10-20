@@ -1,11 +1,7 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { isAdminEmail } from '../config/admin';
-import BackButton from './BackButton';
-import ThemeToggle from './ThemeToggle';
+import React, { useState } from 'react';
 import BalanceDisplay from './BalanceDisplay';
 import ProfileDropdown from './ProfileDropdown';
+import SidebarMenu from './SidebarMenu';
 
 interface ProjectHeaderProps {
   projectName: string;
@@ -14,6 +10,8 @@ interface ProjectHeaderProps {
   onRedo?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
+  onRefresh?: () => void;
+  projectId?: string;
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -23,92 +21,104 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   onRedo,
   canUndo = false,
   canRedo = false,
+  onRefresh,
+  projectId,
 }) => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const isAdmin = user ? isAdminEmail(user.email) : false;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          {/* Left: Back Button and Project Info */}
-          <div className="flex items-center space-x-4">
-            <BackButton to={isAdmin ? "/admin" : "/"} label={isAdmin ? "Admin Panel" : "Projects"} />
-            <div className="border-l border-gray-300 dark:border-gray-600 pl-4">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {projectName}
-              </h1>
-              {projectDate && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {projectDate}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center space-x-3">
-            {/* Balance Display for Regular Users */}
-            {!isAdmin && <BalanceDisplay />}
-
-            {/* Admin Panel Button for Admins */}
-            {isAdmin && (
+    <>
+      <div className="bg-gray-800 shadow-sm border-b border-gray-700 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left: Menu Button and Project Info */}
+            <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate('/admin')}
-                className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all hover:scale-105"
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                aria-label="Open menu"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
-                <span>Admin Panel</span>
-                <span className="text-xs opacity-75">👑</span>
               </button>
-            )}
-
-            {/* Undo/Redo Buttons */}
-            {(onUndo || onRedo) && (
-              <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                <button
-                  onClick={onUndo}
-                  disabled={!canUndo}
-                  className={`p-2 rounded transition-colors ${
-                    canUndo
-                      ? 'hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
-                      : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                  }`}
-                  title="Undo (Ctrl+Z)"
-                  aria-label="Undo"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                  </svg>
-                </button>
-                
-                <button
-                  onClick={onRedo}
-                  disabled={!canRedo}
-                  className={`p-2 rounded transition-colors ${
-                    canRedo
-                      ? 'hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
-                      : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                  }`}
-                  title="Redo (Ctrl+Y)"
-                  aria-label="Redo"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
-                  </svg>
-                </button>
+              <div className="border-l border-gray-600 pl-4">
+                <h1 className="text-2xl font-bold text-white">
+                  {projectName}
+                </h1>
+                {projectDate && (
+                  <p className="text-sm text-gray-300 mt-1">
+                    {projectDate}
+                  </p>
+                )}
               </div>
-            )}
+            </div>
 
-            <ProfileDropdown />
-            <ThemeToggle />
+            {/* Right: Actions */}
+            <div className="flex items-center space-x-3">
+              {/* Balance Display for All Users */}
+              <BalanceDisplay />
+
+              {/* Refresh Button */}
+              {onRefresh && (
+                <button
+                  onClick={onRefresh}
+                  className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  title="Refresh Data"
+                  aria-label="Refresh"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Undo/Redo Buttons */}
+              {(onUndo || onRedo) && (
+                <div className="flex items-center space-x-1 bg-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={onUndo}
+                    disabled={!canUndo}
+                    className={`p-2 rounded transition-colors ${
+                      canUndo
+                        ? 'hover:bg-gray-600 text-white'
+                        : 'text-gray-500 cursor-not-allowed'
+                    }`}
+                    title="Undo (Ctrl+Z)"
+                    aria-label="Undo"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                  </button>
+                  
+                  <button
+                    onClick={onRedo}
+                    disabled={!canRedo}
+                    className={`p-2 rounded transition-colors ${
+                      canRedo
+                        ? 'hover:bg-gray-600 text-white'
+                        : 'text-gray-500 cursor-not-allowed'
+                    }`}
+                    title="Redo (Ctrl+Y)"
+                    aria-label="Redo"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              <ProfileDropdown />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Sidebar Menu */}
+      <SidebarMenu isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} projectId={projectId} />
+    </>
   );
 };
 

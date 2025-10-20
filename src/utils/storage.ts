@@ -19,12 +19,17 @@ export const getProjects = (userId?: string): Project[] => {
     const data = localStorage.getItem(STORAGE_KEYS.PROJECTS);
     const allProjects: Project[] = data ? JSON.parse(data) : [];
     
+    console.log('getProjects called - Total projects:', allProjects.length, 'userId:', userId);
+    
     // If userId is provided, filter by userId
     if (userId) {
-      return allProjects.filter(p => p.userId === userId);
+      const userProjects = allProjects.filter(p => p.userId === userId);
+      console.log('Found', userProjects.length, 'projects for userId:', userId);
+      return userProjects;
     }
     
     // If no userId (backward compatibility), return all
+    console.log('Returning all projects (no userId filter)');
     return allProjects;
   } catch (error) {
     console.error('Error reading projects from localStorage:', error);
@@ -37,16 +42,23 @@ export const getProjects = (userId?: string): Project[] => {
  */
 export const saveProject = (project: Project): void => {
   try {
+    if (!project.userId) {
+      console.warn('⚠️ Warning: Saving project without userId', project);
+    }
+    
     const allProjects = getAllProjects(); // Get all projects from all users
     const existingIndex = allProjects.findIndex((p) => p.id === project.id);
     
     if (existingIndex >= 0) {
+      console.log('Updating existing project:', project.id, 'for userId:', project.userId);
       allProjects[existingIndex] = project;
     } else {
+      console.log('Creating new project:', project.id, 'for userId:', project.userId);
       allProjects.push(project);
     }
     
     localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(allProjects));
+    console.log('Total projects in storage:', allProjects.length);
   } catch (error) {
     console.error('Error saving project to localStorage:', error);
   }

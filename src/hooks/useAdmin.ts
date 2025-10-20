@@ -46,6 +46,42 @@ export const useAdminData = () => {
 
         if (error) throw error;
 
+        // Fetch all projects to get counts per user
+        const { data: projects, error: projectsError } = await supabase
+          .from('projects')
+          .select('id, user_id');
+
+        if (projectsError) console.warn('Failed to fetch projects:', projectsError);
+
+        // Fetch all transactions to get entry counts and totals
+        const { data: transactions, error: transactionsError } = await supabase
+          .from('transactions')
+          .select('id, project_id, first, second');
+
+        if (transactionsError) console.warn('Failed to fetch transactions:', transactionsError);
+
+        // Build project count map
+        const projectCountMap: { [userId: string]: number } = {};
+        const projectIdToUserIdMap: { [projectId: string]: string } = {};
+        (projects || []).forEach((p) => {
+          projectCountMap[p.user_id] = (projectCountMap[p.user_id] || 0) + 1;
+          projectIdToUserIdMap[p.id] = p.user_id;
+        });
+
+        // Build transaction stats map
+        const userStatsMap: { [userId: string]: { entries: number; firstTotal: number; secondTotal: number } } = {};
+        (transactions || []).forEach((t) => {
+          const userId = projectIdToUserIdMap[t.project_id];
+          if (userId) {
+            if (!userStatsMap[userId]) {
+              userStatsMap[userId] = { entries: 0, firstTotal: 0, secondTotal: 0 };
+            }
+            userStatsMap[userId].entries++;
+            userStatsMap[userId].firstTotal += t.first || 0;
+            userStatsMap[userId].secondTotal += t.second || 0;
+          }
+        });
+
         const mapped: UserAccount[] = (profiles || []).map((p) => ({
           id: p.user_id,
           userId: p.user_id,
@@ -62,26 +98,33 @@ export const useAdminData = () => {
         }));
 
         setUsers(mapped);
-        setReports(mapped.map((u) => ({
-          userId: u.userId,
-          email: u.email,
-          displayName: u.displayName,
-          projectCount: 0,
-          totalEntries: 0,
-          firstTotal: 0,
-          secondTotal: 0,
-          grandTotal: 0,
-          balance: u.balance,
-          isOnline: u.isOnline,
-          lastSeen: u.lastSeen,
-          createdAt: u.createdAt,
-        })));
+        setReports(mapped.map((u) => {
+          const stats = userStatsMap[u.userId] || { entries: 0, firstTotal: 0, secondTotal: 0 };
+          return {
+            userId: u.userId,
+            email: u.email,
+            displayName: u.displayName,
+            projectCount: projectCountMap[u.userId] || 0,
+            totalEntries: stats.entries,
+            firstTotal: stats.firstTotal,
+            secondTotal: stats.secondTotal,
+            grandTotal: stats.firstTotal + stats.secondTotal,
+            balance: u.balance,
+            isOnline: u.isOnline,
+            lastSeen: u.lastSeen,
+            createdAt: u.createdAt,
+          };
+        }));
+
+        const totalProjects = (projects || []).length;
+        const totalEntries = (transactions || []).length;
+
         setStats({
           totalUsers: mapped.length,
           activeUsers: mapped.filter((u) => u.isActive).length,
           onlineUsers: mapped.filter((u) => u.isOnline).length,
-          totalProjects: 0,
-          totalEntries: 0,
+          totalProjects,
+          totalEntries,
           totalBalance: mapped.reduce((s, u) => s + u.balance, 0),
           totalRevenue: 0,
         });
@@ -212,9 +255,10 @@ export const useAdminData = () => {
     return balances[userId] || 0;
   };
 
-  const deleteUser = (_userId: string): boolean => {
+  const deleteUser = (userId: string): boolean => {
     try {
       // This would delete from database in real implementation
+      console.log('Deleting user:', userId);
       loadAdminData();
       return true;
     } catch (error) {
@@ -223,9 +267,10 @@ export const useAdminData = () => {
     }
   };
 
-  const toggleUserStatus = (_userId: string): boolean => {
+  const toggleUserStatus = (userId: string): boolean => {
     try {
       // This would update database in real implementation
+      console.log('Toggling user status:', userId);
       loadAdminData();
       return true;
     } catch (error) {

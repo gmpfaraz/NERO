@@ -6,7 +6,7 @@ const AdminReports: React.FC = () => {
   const { users, stats, loading } = useAdminData();
   const [reportType, setReportType] = useState<'users' | 'projects' | 'financial' | 'activity'>('users');
 
-  const exportToCSV = (data: any[], filename: string) => {
+  const exportToCSV = (data: Record<string, unknown>[], filename: string) => {
     if (!data || data.length === 0) {
       alert('No data to export');
       return;

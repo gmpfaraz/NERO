@@ -1,0 +1,1066 @@
+{
+  "designSystem": {
+    "metadata": {
+      "name": "Modern Dashboard Glassmorphic Design System",
+      "version": "1.0.0",
+      "type": "dashboard-analytics-ui",
+      "description": "A comprehensive design system extracted from modern dashboard aesthetics featuring glassmorphism, soft pastels, decorative data visualization patterns, and clean minimalist interfaces. Optimized for analytics dashboards, admin panels, and data-heavy applications.",
+      "designStyle": "glassmorphism-soft-minimalist",
+      "targetAudience": "Professional dashboards, analytics tools, SaaS platforms, HR systems, project management",
+      "lastUpdated": "2024"
+    },
+
+    "visualStyleCharacteristics": {
+      "primaryAesthetic": "glassmorphism-with-soft-pastels",
+      "keyAttributes": [
+        "Soft, muted pastel color palette with high sophistication",
+        "Frosted glass effects with backdrop blur and transparency",
+        "Decorative patterns on data visualizations (dots, diagonal stripes, hatching)",
+        "Generous rounded corners (12px-24px range)",
+        "Subtle multi-layered shadows for depth",
+        "Gradient transitions in chart elements from light to dark tones",
+        "Clean, airy whitespace with balanced density",
+        "Modern sans-serif typography with clear hierarchy",
+        "Icon-driven navigation with minimal text",
+        "Soft borders with low contrast for subtle separation"
+      ],
+      "designPrinciples": [
+        "Sophistication over vibrancy - use muted, professional tones",
+        "Clarity through hierarchy - clear visual weight differences",
+        "Decorative yet functional - patterns enhance readability",
+        "Consistency in rounding - all corners follow same scale",
+        "Subtle depth - never harsh shadows",
+        "Breathing room - generous padding and spacing"
+      ]
+    },
+
+    "colorSystem": {
+      "philosophy": "Soft pastels with professional sophistication. Colors are muted, never vibrant or saturated. Each color has purpose and meaning.",
+      
+      "backgrounds": {
+        "primary": {
+          "value": "#F8F9FB",
+          "description": "Main background - very light blue-gray",
+          "usage": "Page background, main canvas"
+        },
+        "secondary": {
+          "value": "#F0F2F5",
+          "description": "Slightly darker than primary for subtle contrast",
+          "usage": "Alternate sections, nested containers"
+        },
+        "gradient": {
+          "value": "linear-gradient(135deg, #E8EBF0 0%, #F5F7FA 100%)",
+          "description": "Subtle gradient for visual interest",
+          "usage": "Large background areas, hero sections"
+        }
+      },
+
+      "surfaces": {
+        "card": {
+          "base": "rgba(255, 255, 255, 0.7)",
+          "blur": "blur(20px)",
+          "border": "rgba(255, 255, 255, 0.3)",
+          "description": "Glassmorphic card with frosted effect",
+          "usage": "Primary cards, stat containers, content blocks"
+        },
+        "cardElevated": {
+          "base": "rgba(255, 255, 255, 0.85)",
+          "blur": "blur(30px)",
+          "border": "rgba(255, 255, 255, 0.5)",
+          "description": "More opaque for important content",
+          "usage": "Modal dialogs, focused cards, elevated panels"
+        },
+        "cardSubtle": {
+          "base": "rgba(255, 255, 255, 0.5)",
+          "blur": "blur(15px)",
+          "border": "rgba(255, 255, 255, 0.2)",
+          "description": "Very subtle for background elements",
+          "usage": "Sidebar backgrounds, secondary panels"
+        }
+      },
+
+      "palettes": {
+        "pastelBlue": {
+          "50": "#F0F5FF",
+          "100": "#E0EBFF",
+          "200": "#C7DCFE",
+          "300": "#A4C4F9",
+          "400": "#7FA8F1",
+          "500": "#5B8DE8",
+          "600": "#4570D4",
+          "description": "Soft blue - professional, trustworthy",
+          "usage": "Primary actions, interviewed metrics, info states"
+        },
+        "pastelPink": {
+          "50": "#FFF0F5",
+          "100": "#FFE4F0",
+          "200": "#FFC9E0",
+          "300": "#FFA8CD",
+          "400": "#FF87BC",
+          "500": "#F066A8",
+          "600": "#D84A8F",
+          "description": "Soft pink - friendly, approachable",
+          "usage": "Success metrics, job offers, positive trends"
+        },
+        "pastelPurple": {
+          "50": "#F8F4FF",
+          "100": "#F0E8FF",
+          "200": "#E4D6FF",
+          "300": "#D1BCFF",
+          "400": "#BDA0FF",
+          "500": "#A482FF",
+          "600": "#8B64E8",
+          "description": "Soft purple - creative, modern",
+          "usage": "Accent elements, highlights, decorative patterns"
+        },
+        "pastelGray": {
+          "50": "#F8F9FB",
+          "100": "#F0F2F5",
+          "200": "#E4E7ED",
+          "300": "#D1D5DD",
+          "400": "#A8ADB8",
+          "500": "#6B7280",
+          "600": "#4B5563",
+          "700": "#374151",
+          "800": "#1F2937",
+          "description": "Soft gray - neutral, sophisticated",
+          "usage": "Text hierarchy, borders, shadows, neutral elements"
+        },
+        "pastelMint": {
+          "50": "#F0FFF9",
+          "100": "#DBFFF0",
+          "200": "#B8F9E0",
+          "300": "#8FEDC9",
+          "400": "#66E0B3",
+          "500": "#3DD49D",
+          "description": "Soft mint green - success, growth",
+          "usage": "Positive metrics, completed states, success indicators"
+        }
+      },
+
+      "dataVisualization": {
+        "chartColors": [
+          {
+            "name": "Blue Gradient",
+            "light": "#A4C4F9",
+            "dark": "#4570D4",
+            "gradient": "linear-gradient(180deg, #A4C4F9 0%, #4570D4 100%)",
+            "usage": "Primary data series, main metrics"
+          },
+          {
+            "name": "Pink Gradient",
+            "light": "#FFA8CD",
+            "dark": "#D84A8F",
+            "gradient": "linear-gradient(180deg, #FFA8CD 0%, #D84A8F 100%)",
+            "usage": "Secondary data series, comparison metrics"
+          },
+          {
+            "name": "Purple Gradient",
+            "light": "#D1BCFF",
+            "dark": "#8B64E8",
+            "gradient": "linear-gradient(180deg, #D1BCFF 0%, #8B64E8 100%)",
+            "usage": "Tertiary data series, supplementary data"
+          },
+          {
+            "name": "Gray Gradient",
+            "light": "#E4E7ED",
+            "dark": "#6B7280",
+            "gradient": "linear-gradient(180deg, #E4E7ED 0%, #6B7280 100%)",
+            "usage": "Neutral data, baselines, comparison bars"
+          },
+          {
+            "name": "Mint Gradient",
+            "light": "#B8F9E0",
+            "dark": "#3DD49D",
+            "gradient": "linear-gradient(180deg, #B8F9E0 0%, #3DD49D 100%)",
+            "usage": "Positive trends, growth indicators"
+          }
+        ],
+        "patternColors": {
+          "dots": {
+            "color": "rgba(255, 255, 255, 0.4)",
+            "description": "Dotted pattern overlay for texture",
+            "usage": "Apply on top of gradient bars for visual interest"
+          },
+          "stripes": {
+            "color": "rgba(255, 255, 255, 0.3)",
+            "alternateColor": "rgba(0, 0, 0, 0.05)",
+            "description": "Diagonal stripe pattern (45deg angle)",
+            "usage": "Hatching effect on forecast or projected data"
+          }
+        }
+      },
+
+      "text": {
+        "primary": {
+          "value": "#1F2937",
+          "description": "Main heading and important text",
+          "usage": "H1, H2, primary labels, important numbers"
+        },
+        "secondary": {
+          "value": "#4B5563",
+          "description": "Body text and descriptions",
+          "usage": "Paragraphs, card content, secondary labels"
+        },
+        "tertiary": {
+          "value": "#6B7280",
+          "description": "Subtle text and metadata",
+          "usage": "Captions, timestamps, helper text"
+        },
+        "quaternary": {
+          "value": "#9CA3AF",
+          "description": "Placeholder and disabled text",
+          "usage": "Placeholders, disabled states, very subtle labels"
+        }
+      },
+
+      "borders": {
+        "subtle": {
+          "value": "rgba(229, 231, 235, 0.5)",
+          "description": "Barely visible separation",
+          "usage": "Card borders, subtle dividers"
+        },
+        "light": {
+          "value": "rgba(229, 231, 235, 0.8)",
+          "description": "Visible but soft borders",
+          "usage": "Input fields, dropdowns, active elements"
+        },
+        "medium": {
+          "value": "#E5E7EB",
+          "description": "Standard borders",
+          "usage": "Tables, clear separations, containers"
+        }
+      },
+
+      "accents": {
+        "success": {
+          "background": "#DBFFF0",
+          "text": "#066242",
+          "icon": "#3DD49D",
+          "description": "Success states and positive indicators"
+        },
+        "warning": {
+          "background": "#FFF6E5",
+          "text": "#92400E",
+          "icon": "#F59E0B",
+          "description": "Warning states and cautionary indicators"
+        },
+        "info": {
+          "background": "#E0EBFF",
+          "text": "#1E40AF",
+          "icon": "#5B8DE8",
+          "description": "Informational states and neutral indicators"
+        }
+      }
+    },
+
+    "typography": {
+      "fontFamilies": {
+        "primary": {
+          "value": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif",
+          "description": "Primary font for all interface text",
+          "fallback": "System sans-serif stack"
+        },
+        "display": {
+          "value": "'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+          "description": "For large headlines and hero text",
+          "fallback": "Inter or system fonts"
+        },
+        "mono": {
+          "value": "'JetBrains Mono', 'SF Mono', 'Consolas', monospace",
+          "description": "For code, data, and technical content",
+          "fallback": "System monospace"
+        }
+      },
+
+      "scale": {
+        "displayLarge": {
+          "fontSize": "3rem",
+          "lineHeight": "1.1",
+          "fontWeight": "700",
+          "letterSpacing": "-0.03em",
+          "usage": "Hero text, major statistics (e.g., +120, +24)"
+        },
+        "displayMedium": {
+          "fontSize": "2.25rem",
+          "lineHeight": "1.2",
+          "fontWeight": "700",
+          "letterSpacing": "-0.02em",
+          "usage": "Page titles, large numbers"
+        },
+        "h1": {
+          "fontSize": "1.875rem",
+          "lineHeight": "1.3",
+          "fontWeight": "700",
+          "letterSpacing": "-0.01em",
+          "usage": "Section headers like 'Good morning, Alexandra'"
+        },
+        "h2": {
+          "fontSize": "1.5rem",
+          "lineHeight": "1.4",
+          "fontWeight": "600",
+          "letterSpacing": "-0.01em",
+          "usage": "Card titles, subsection headers"
+        },
+        "h3": {
+          "fontSize": "1.25rem",
+          "lineHeight": "1.5",
+          "fontWeight": "600",
+          "letterSpacing": "0",
+          "usage": "Component titles like 'Hiring pipeline'"
+        },
+        "h4": {
+          "fontSize": "1.125rem",
+          "lineHeight": "1.5",
+          "fontWeight": "600",
+          "letterSpacing": "0",
+          "usage": "Small section headers"
+        },
+        "bodyLarge": {
+          "fontSize": "1rem",
+          "lineHeight": "1.6",
+          "fontWeight": "400",
+          "letterSpacing": "0",
+          "usage": "Primary body text, card content"
+        },
+        "body": {
+          "fontSize": "0.875rem",
+          "lineHeight": "1.5",
+          "fontWeight": "400",
+          "letterSpacing": "0",
+          "usage": "Standard body text, labels"
+        },
+        "bodySmall": {
+          "fontSize": "0.8125rem",
+          "lineHeight": "1.5",
+          "fontWeight": "400",
+          "letterSpacing": "0",
+          "usage": "Smaller text, secondary information"
+        },
+        "caption": {
+          "fontSize": "0.75rem",
+          "lineHeight": "1.4",
+          "fontWeight": "400",
+          "letterSpacing": "0.01em",
+          "usage": "Captions, metadata like 'vs last week', 'You have 3 meetings today'"
+        },
+        "overline": {
+          "fontSize": "0.6875rem",
+          "lineHeight": "1.3",
+          "fontWeight": "600",
+          "letterSpacing": "0.08em",
+          "textTransform": "uppercase",
+          "usage": "Labels, categories, badges"
+        }
+      },
+
+      "weights": {
+        "light": 300,
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700,
+        "extrabold": 800
+      }
+    },
+
+    "spacing": {
+      "philosophy": "Use 8px base unit for consistency. Generous spacing creates breathing room.",
+      "baseUnit": "8px",
+      
+      "scale": {
+        "0": "0",
+        "1": "0.25rem",
+        "2": "0.5rem",
+        "3": "0.75rem",
+        "4": "1rem",
+        "5": "1.25rem",
+        "6": "1.5rem",
+        "8": "2rem",
+        "10": "2.5rem",
+        "12": "3rem",
+        "16": "4rem",
+        "20": "5rem",
+        "24": "6rem"
+      },
+
+      "componentPadding": {
+        "card": {
+          "default": "1.5rem",
+          "compact": "1rem",
+          "spacious": "2rem",
+          "description": "Internal padding for cards"
+        },
+        "button": {
+          "default": "0.75rem 1.5rem",
+          "small": "0.5rem 1rem",
+          "large": "1rem 2rem",
+          "description": "Padding for interactive buttons"
+        },
+        "input": {
+          "default": "0.75rem 1rem",
+          "description": "Input field padding"
+        }
+      },
+
+      "gaps": {
+        "cardGrid": "1.5rem",
+        "componentGap": "1rem",
+        "sectionGap": "2.5rem",
+        "listItemGap": "0.75rem",
+        "description": "Gaps between elements and sections"
+      }
+    },
+
+    "borderRadius": {
+      "philosophy": "Generous rounding creates softness. Use consistent scale throughout.",
+      
+      "scale": {
+        "xs": "0.25rem",
+        "sm": "0.5rem",
+        "md": "0.75rem",
+        "lg": "1rem",
+        "xl": "1.25rem",
+        "2xl": "1.5rem",
+        "3xl": "2rem",
+        "full": "9999px"
+      },
+
+      "usage": {
+        "card": "1rem to 1.5rem",
+        "statCard": "1.25rem to 1.5rem",
+        "button": "0.75rem to 1rem",
+        "input": "0.75rem",
+        "badge": "9999px",
+        "avatar": "9999px",
+        "chart": "0.5rem",
+        "modal": "1.5rem",
+        "sidebar": "0 (no rounding on screen edges)"
+      }
+    },
+
+    "shadows": {
+      "philosophy": "Soft, multi-layered shadows for subtle depth. Never harsh or dark.",
+      
+      "levels": {
+        "xs": {
+          "value": "0 1px 2px rgba(0, 0, 0, 0.04)",
+          "usage": "Subtle lift for small elements"
+        },
+        "sm": {
+          "value": "0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03)",
+          "usage": "Cards at rest, default elevation"
+        },
+        "md": {
+          "value": "0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)",
+          "usage": "Elevated cards, stat containers"
+        },
+        "lg": {
+          "value": "0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06)",
+          "usage": "Modals, dropdowns, floating elements"
+        },
+        "xl": {
+          "value": "0 16px 32px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08)",
+          "usage": "Major overlays, important dialogs"
+        }
+      },
+
+      "colored": {
+        "blue": "0 8px 16px rgba(69, 112, 212, 0.15)",
+        "pink": "0 8px 16px rgba(216, 74, 143, 0.15)",
+        "purple": "0 8px 16px rgba(139, 100, 232, 0.15)",
+        "description": "Subtle colored shadows for branded elements"
+      }
+    },
+
+    "effects": {
+      "glassmorphism": {
+        "description": "Frosted glass effect with blur and transparency",
+        "properties": {
+          "background": "rgba(255, 255, 255, 0.7)",
+          "backdropFilter": "blur(20px) saturate(180%)",
+          "WebkitBackdropFilter": "blur(20px) saturate(180%)",
+          "border": "1px solid rgba(255, 255, 255, 0.3)",
+          "boxShadow": "0 8px 32px rgba(0, 0, 0, 0.08)"
+        },
+        "variants": {
+          "strong": {
+            "background": "rgba(255, 255, 255, 0.85)",
+            "backdropFilter": "blur(30px) saturate(200%)"
+          },
+          "subtle": {
+            "background": "rgba(255, 255, 255, 0.5)",
+            "backdropFilter": "blur(15px) saturate(150%)"
+          }
+        }
+      },
+
+      "gradients": {
+        "backgroundGradient": {
+          "value": "linear-gradient(135deg, #E8EBF0 0%, #F5F7FA 100%)",
+          "description": "Subtle background gradient"
+        },
+        "cardGradient": {
+          "value": "linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%)",
+          "description": "Gradient overlay for cards"
+        },
+        "chartBar": {
+          "value": "linear-gradient(180deg, [lightColor] 0%, [darkColor] 100%)",
+          "description": "Top to bottom gradient for chart bars"
+        }
+      },
+
+      "patterns": {
+        "dots": {
+          "description": "Dotted pattern overlay for visual texture",
+          "implementation": "SVG or CSS pattern with small circles",
+          "properties": {
+            "dotSize": "2px to 3px",
+            "spacing": "8px to 10px",
+            "color": "rgba(255, 255, 255, 0.4)",
+            "opacity": "0.6"
+          },
+          "usage": "Overlay on chart bars, background decorations"
+        },
+        "diagonalStripes": {
+          "description": "Diagonal hatching pattern (45deg angle)",
+          "implementation": "SVG pattern or repeating linear gradient",
+          "properties": {
+            "stripeWidth": "2px to 3px",
+            "spacing": "6px to 8px",
+            "angle": "45deg",
+            "color": "rgba(255, 255, 255, 0.3)",
+            "alternateColor": "transparent or rgba(0, 0, 0, 0.05)"
+          },
+          "usage": "Projected data, forecast bars, differentiation from actual data"
+        },
+        "grid": {
+          "description": "Subtle grid pattern for backgrounds",
+          "properties": {
+            "lineWidth": "1px",
+            "spacing": "40px to 60px",
+            "color": "rgba(0, 0, 0, 0.02)"
+          },
+          "usage": "Large background areas, page backgrounds"
+        }
+      }
+    },
+
+    "components": {
+      "statCard": {
+        "description": "Card displaying key metrics with large numbers and trend indicators",
+        "structure": {
+          "layout": "flex-column",
+          "padding": "1.5rem",
+          "borderRadius": "1.25rem",
+          "minHeight": "160px",
+          "gap": "0.75rem"
+        },
+        "elements": {
+          "label": {
+            "typography": "body or caption",
+            "color": "text-secondary",
+            "position": "top or bottom"
+          },
+          "value": {
+            "typography": "displayLarge (3rem, 700 weight)",
+            "color": "text-primary",
+            "lineHeight": "1.1",
+            "includeSymbol": "prefix like '+' or '$'"
+          },
+          "trend": {
+            "typography": "caption",
+            "badge": {
+              "background": "rgba color based on positive/negative",
+              "padding": "0.25rem 0.5rem",
+              "borderRadius": "full",
+              "icon": "arrow up/down",
+              "text": "percentage like '24%' or '30%'"
+            }
+          },
+          "subtitle": {
+            "typography": "caption",
+            "color": "text-tertiary",
+            "text": "'vs last week', 'vs last month'"
+          }
+        },
+        "variants": {
+          "withChart": "Include small sparkline or mini bar chart at bottom",
+          "withIcon": "Icon in top right corner",
+          "colored": "Use pastel background color instead of white"
+        }
+      },
+
+      "chartBar": {
+        "description": "Bar chart with gradient fills and optional pattern overlays",
+        "structure": {
+          "barWidth": "20px to 40px",
+          "barGap": "8px to 16px",
+          "barRadius": "0.5rem (top corners)",
+          "minHeight": "20px",
+          "maxHeight": "200px"
+        },
+        "styling": {
+          "fill": "linear-gradient(180deg, lightColor 0%, darkColor 100%)",
+          "patternOverlay": {
+            "dots": "For actual data",
+            "stripes": "For projected/forecast data"
+          },
+          "hover": {
+            "transform": "scale(1.05)",
+            "brightness": "110%"
+          }
+        },
+        "variants": {
+          "stacked": "Multiple colors stacked vertically",
+          "grouped": "Multiple bars side by side per category",
+          "simple": "Single color per bar"
+        }
+      },
+
+      "hiringStagePipeline": {
+        "description": "Horizontal stage pipeline showing progression through steps",
+        "structure": {
+          "layout": "table or flex grid",
+          "rows": "Job positions (Web Developer, Analyst, etc.)",
+          "columns": "Stages (Screening, Background check, Interviews, etc.)"
+        },
+        "cells": {
+          "padding": "1rem to 1.5rem",
+          "borderRadius": "0.75rem",
+          "background": "Pastel color based on value/density",
+          "value": {
+            "typography": "bodyLarge (1rem, 600 weight)",
+            "color": "text-primary",
+            "centered": true
+          },
+          "colors": {
+            "high": "Darker pastel (more candidates)",
+            "medium": "Medium pastel",
+            "low": "Light pastel (fewer candidates)",
+            "scale": ["#F0F5FF", "#E0EBFF", "#C7DCFE", "#A4C4F9"]
+          }
+        },
+        "labels": {
+          "stageLabels": {
+            "position": "top of columns",
+            "typography": "caption",
+            "color": "text-tertiary"
+          },
+          "jobLabels": {
+            "position": "left of rows",
+            "typography": "body",
+            "color": "text-secondary"
+          }
+        }
+      },
+
+      "sidebarNavigation": {
+        "description": "Left sidebar with icon-based navigation",
+        "structure": {
+          "width": "80px (collapsed) or 240px (expanded)",
+          "background": "glassmorphic white or solid white",
+          "padding": "1.5rem 1rem",
+          "position": "fixed left"
+        },
+        "logo": {
+          "position": "top",
+          "size": "48px circle",
+          "background": "brand color or dark",
+          "marginBottom": "2rem"
+        },
+        "menuItems": {
+          "height": "48px",
+          "width": "48px (collapsed) or full (expanded)",
+          "borderRadius": "0.75rem",
+          "gap": "0.5rem",
+          "icon": {
+            "size": "24px",
+            "strokeWidth": "2px",
+            "color": "text-tertiary (default) or brand (active)"
+          },
+          "states": {
+            "default": {
+              "background": "transparent",
+              "color": "text-tertiary"
+            },
+            "hover": {
+              "background": "rgba(0, 0, 0, 0.04)",
+              "color": "text-primary"
+            },
+            "active": {
+              "background": "pastelBlue-50",
+              "color": "pastelBlue-600"
+            }
+          }
+        }
+      },
+
+      "search": {
+        "description": "Search input field with icon",
+        "structure": {
+          "height": "44px",
+          "padding": "0.75rem 1rem 0.75rem 2.75rem",
+          "borderRadius": "0.75rem",
+          "background": "rgba(255, 255, 255, 0.6)",
+          "border": "1px solid rgba(229, 231, 235, 0.5)"
+        },
+        "icon": {
+          "position": "absolute left 1rem",
+          "size": "20px",
+          "color": "text-tertiary"
+        },
+        "placeholder": {
+          "text": "'Search'",
+          "color": "text-quaternary",
+          "fontSize": "0.875rem"
+        },
+        "focus": {
+          "background": "rgba(255, 255, 255, 0.9)",
+          "border": "1px solid pastelBlue-300",
+          "boxShadow": "0 0 0 3px rgba(164, 196, 249, 0.1)"
+        }
+      },
+
+      "badge": {
+        "description": "Small pill-shaped indicator for trends or status",
+        "structure": {
+          "padding": "0.25rem 0.625rem",
+          "borderRadius": "9999px",
+          "typography": "caption (0.75rem, 600 weight)",
+          "display": "inline-flex align-center",
+          "gap": "0.25rem"
+        },
+        "variants": {
+          "success": {
+            "background": "#DBFFF0",
+            "color": "#066242",
+            "icon": "↑ or check"
+          },
+          "warning": {
+            "background": "#FFF6E5",
+            "color": "#92400E",
+            "icon": "↓ or alert"
+          },
+          "neutral": {
+            "background": "#F0F2F5",
+            "color": "#4B5563"
+          }
+        }
+      },
+
+      "rightPanel": {
+        "description": "Right sidebar showing platform insights or activity",
+        "structure": {
+          "width": "280px to 320px",
+          "background": "glassmorphic or solid white",
+          "padding": "1.5rem",
+          "position": "fixed right"
+        },
+        "sections": {
+          "header": {
+            "typography": "h3",
+            "marginBottom": "1rem"
+          },
+          "list": {
+            "gap": "1rem",
+            "itemLayout": "flex with icon and text"
+          },
+          "item": {
+            "padding": "0.75rem",
+            "borderRadius": "0.75rem",
+            "background": "hover: rgba(0, 0, 0, 0.02)",
+            "icon": {
+              "size": "32px to 40px",
+              "borderRadius": "0.5rem",
+              "background": "brand color or logo"
+            },
+            "text": {
+              "name": "body (600 weight)",
+              "description": "caption or bodySmall"
+            }
+          }
+        }
+      },
+
+      "greeting": {
+        "description": "Personalized greeting header",
+        "structure": {
+          "marginBottom": "2rem"
+        },
+        "mainText": {
+          "text": "'Good morning, [Name]'",
+          "typography": "h1 (1.875rem, 700 weight)",
+          "color": "text-primary"
+        },
+        "subText": {
+          "text": "'You have X meetings today'",
+          "typography": "caption",
+          "color": "text-tertiary",
+          "marginTop": "0.25rem"
+        }
+      }
+    },
+
+    "layout": {
+      "dashboardStructure": {
+        "type": "three-column",
+        "columns": [
+          {
+            "name": "sidebar",
+            "width": "80px (collapsed) or 240px (expanded)",
+            "position": "fixed left"
+          },
+          {
+            "name": "main",
+            "width": "flex-1",
+            "padding": "2rem",
+            "marginLeft": "sidebar width",
+            "marginRight": "rightPanel width"
+          },
+          {
+            "name": "rightPanel",
+            "width": "280px to 320px",
+            "position": "fixed right"
+          }
+        ]
+      },
+
+      "cardGrid": {
+        "display": "grid",
+        "columns": {
+          "desktop": "repeat(auto-fit, minmax(280px, 1fr))",
+          "tablet": "repeat(2, 1fr)",
+          "mobile": "1fr"
+        },
+        "gap": "1.5rem",
+        "autoFlow": "dense (for masonry-like effect)"
+      },
+
+      "contentSections": {
+        "gap": "2.5rem to 3rem",
+        "sectionHeader": {
+          "marginBottom": "1.5rem",
+          "display": "flex justify-between align-center"
+        }
+      }
+    },
+
+    "animations": {
+      "philosophy": "Subtle, smooth animations that feel natural. Never jarring or distracting.",
+      
+      "transitions": {
+        "fast": "150ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "normal": "250ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "slow": "350ms cubic-bezier(0.4, 0, 0.2, 1)"
+      },
+
+      "interactions": {
+        "cardHover": {
+          "transform": "translateY(-2px)",
+          "boxShadow": "elevate one level",
+          "transition": "normal"
+        },
+        "buttonHover": {
+          "transform": "translateY(-1px)",
+          "brightness": "105%",
+          "transition": "fast"
+        },
+        "buttonActive": {
+          "transform": "scale(0.98)",
+          "transition": "fast"
+        },
+        "chartBarHover": {
+          "transform": "scale(1.05)",
+          "filter": "brightness(110%)",
+          "transition": "fast"
+        }
+      },
+
+      "entranceAnimations": {
+        "fadeInUp": {
+          "from": "opacity: 0, transform: translateY(20px)",
+          "to": "opacity: 1, transform: translateY(0)",
+          "duration": "slow",
+          "easing": "cubic-bezier(0.4, 0, 0.2, 1)"
+        },
+        "staggerChildren": {
+          "delay": "50ms to 100ms between each child",
+          "description": "Animate cards or list items one after another"
+        }
+      }
+    },
+
+    "dataVisualization": {
+      "philosophy": "Decorative yet functional. Patterns add visual interest while maintaining clarity.",
+      
+      "chartTypes": {
+        "barChart": {
+          "description": "Primary chart type with gradient bars and patterns",
+          "barStyling": {
+            "gradient": "top to bottom (light to dark)",
+            "pattern": "dots for actual data, stripes for projected",
+            "spacing": "8px to 16px between bars",
+            "borderRadius": "0.5rem top corners"
+          },
+          "axis": {
+            "lineColor": "rgba(0, 0, 0, 0.1)",
+            "lineWidth": "1px",
+            "labels": {
+              "color": "text-tertiary",
+              "fontSize": "0.75rem"
+            }
+          },
+          "gridLines": {
+            "color": "rgba(0, 0, 0, 0.05)",
+            "style": "dashed or dotted",
+            "horizontalOnly": true
+          }
+        },
+        "heatmap": {
+          "description": "Color-coded cells showing intensity (like hiring pipeline)",
+          "cellStyling": {
+            "padding": "1rem to 1.5rem",
+            "borderRadius": "0.75rem",
+            "colorScale": "Light to dark based on value",
+            "gap": "0.5rem between cells"
+          },
+          "colorRanges": [
+            {"range": "0-25%", "color": "#F0F5FF"},
+            {"range": "26-50%", "color": "#E0EBFF"},
+            {"range": "51-75%", "color": "#C7DCFE"},
+            {"range": "76-100%", "color": "#A4C4F9"}
+          ]
+        }
+      },
+
+      "patternImplementation": {
+        "dotPattern": {
+          "svg": "<pattern id='dots' width='10' height='10' patternUnits='userSpaceOnUse'><circle cx='2' cy='2' r='1.5' fill='rgba(255,255,255,0.4)'/></pattern>",
+          "css": "background-image: radial-gradient(circle, rgba(255,255,255,0.4) 1.5px, transparent 1.5px); background-size: 10px 10px;"
+        },
+        "stripePattern": {
+          "svg": "<pattern id='stripes' width='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(45)'><line x1='0' y1='0' x2='0' y2='8' stroke='rgba(255,255,255,0.3)' stroke-width='3'/></pattern>",
+          "css": "background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.3) 5px, rgba(255,255,255,0.3) 8px);"
+        }
+      },
+
+      "legends": {
+        "position": "bottom or right of chart",
+        "layout": "horizontal flex with gap",
+        "item": {
+          "display": "flex align-center",
+          "gap": "0.5rem",
+          "marker": {
+            "width": "12px",
+            "height": "12px",
+            "borderRadius": "0.25rem",
+            "background": "chart color"
+          },
+          "label": {
+            "typography": "caption",
+            "color": "text-secondary"
+          }
+        }
+      }
+    },
+
+    "responsiveness": {
+      "breakpoints": {
+        "mobile": "< 768px",
+        "tablet": "768px - 1024px",
+        "desktop": "> 1024px"
+      },
+
+      "adaptations": {
+        "mobile": {
+          "sidebar": "hidden, accessible via menu button",
+          "rightPanel": "hidden or bottom sheet",
+          "cardGrid": "1 column",
+          "statCard": "full width",
+          "fontSize": "scale down 10%",
+          "padding": "reduce to 1rem"
+        },
+        "tablet": {
+          "sidebar": "collapsed (icons only)",
+          "rightPanel": "hidden",
+          "cardGrid": "2 columns",
+          "statCard": "half width"
+        },
+        "desktop": {
+          "sidebar": "expanded with labels",
+          "rightPanel": "visible",
+          "cardGrid": "3-4 columns",
+          "statCard": "varies"
+        }
+      }
+    },
+
+    "implementationGuidelines": {
+      "forAI": [
+        "Always use soft, muted pastel colors - never vibrant or saturated",
+        "Apply glassmorphism to cards: rgba(255,255,255,0.7) + backdrop-filter: blur(20px)",
+        "Use generous border radius (1rem to 1.5rem) for cards and containers",
+        "Add decorative patterns (dots or stripes) to chart bars for visual interest",
+        "Implement gradient fills on chart bars: linear-gradient(180deg, light 0%, dark 100%)",
+        "Use multi-layered soft shadows: combine 2-3 shadow values for depth",
+        "Maintain clear typography hierarchy with proper weight and size differences",
+        "Space elements generously - use 1.5rem to 2rem gaps between cards",
+        "For stat cards: large bold numbers (3rem, 700 weight) with small labels below",
+        "Add trend badges with colored backgrounds and arrow icons (↑/↓)",
+        "Use consistent rounding throughout - same border-radius scale everywhere",
+        "Implement subtle hover effects: translateY(-2px) and brighter shadow",
+        "Pattern overlays should be semi-transparent: rgba(255,255,255,0.3-0.4)",
+        "Text should have clear hierarchy: primary (#1F2937), secondary (#4B5563), tertiary (#6B7280)",
+        "Background should be very light: #F8F9FB or similar"
+      ],
+
+      "colorUsageRules": [
+        "Use pastelBlue for primary actions and 'Interviewed' type metrics",
+        "Use pastelPink for success states and 'Job offers' type metrics",
+        "Use pastelPurple for accents and decorative elements",
+        "Use pastelGray for neutral elements, text, and borders",
+        "Use pastelMint for positive trends and growth indicators",
+        "Never use pure black - darkest should be #1F2937",
+        "Never use pure white text - lightest gray should be #F8F9FB background",
+        "Borders should be very subtle: rgba(229, 231, 235, 0.5)"
+      ],
+
+      "patternUsageRules": [
+        "Apply dot pattern to actual/real data in charts",
+        "Apply diagonal stripe pattern to projected/forecast data",
+        "Patterns should be overlays with 40-60% opacity",
+        "Pattern color should be lighter than base color",
+        "Use patterns sparingly - they're decorative enhancement, not primary design"
+      ],
+
+      "doAndDont": {
+        "do": [
+          "Use soft, muted pastel colors",
+          "Apply generous rounded corners",
+          "Add subtle shadows with multiple layers",
+          "Use glassmorphism for cards and panels",
+          "Maintain consistent spacing (multiples of 8px)",
+          "Add decorative patterns to data visualizations",
+          "Use gradients on chart bars (light to dark)",
+          "Provide clear visual hierarchy",
+          "Use semi-transparent backgrounds",
+          "Add subtle hover effects"
+        ],
+        "dont": [
+          "Use vibrant or saturated colors",
+          "Use harsh shadows or high contrast borders",
+          "Use sharp corners (except where intentional)",
+          "Overcrowd the interface - embrace whitespace",
+          "Use pure black or pure white",
+          "Make patterns too prominent or distracting",
+          "Use single solid colors for charts",
+          "Mix different border radius scales",
+          "Use opaque backgrounds everywhere",
+          "Add jarring or fast animations"
+        ]
+      }
+    }
+  }
+}
+

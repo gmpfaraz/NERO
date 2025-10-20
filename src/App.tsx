@@ -2,8 +2,13 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotificationContainer from './components/NotificationContainer';
+import { useNotifications } from './contexts/NotificationContext';
+import { useConfirmation } from './hooks/useConfirmation.tsx';
+import { initializeCustomPopups } from './utils/customPopups';
 import Welcome from './pages/Welcome';
 import Profile from './pages/Profile';
 import ProjectSelection from './pages/ProjectSelection';
@@ -17,13 +22,25 @@ import AdminPanel from './pages/AdminPanel';
 import UserProjects from './pages/UserProjects';
 import NotFound from './pages/NotFound';
 
-const App: React.FC = () => {
+// Component that renders notifications and initializes custom popups
+const AppWithNotifications: React.FC = () => {
+  const { notifications, removeNotification, showSuccess, showError, showWarning, showInfo } = useNotifications();
+  const { confirm, ConfirmationComponent } = useConfirmation();
+  
+  // Initialize custom popup system
+  React.useEffect(() => {
+    initializeCustomPopups({
+      showSuccess,
+      showError,
+      showWarning,
+      showInfo,
+      confirm
+    });
+  }, [showSuccess, showError, showWarning, showInfo, confirm]);
+  
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
+    <>
+      <Routes>
               {/* Public routes */}
               <Route path="/welcome" element={<Welcome />} />
               
@@ -121,7 +138,25 @@ const App: React.FC = () => {
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
-          </BrowserRouter>
+      <NotificationContainer 
+        notifications={notifications} 
+        onClose={removeNotification} 
+      />
+      <ConfirmationComponent />
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <BrowserRouter>
+              <AppWithNotifications />
+            </BrowserRouter>
+          </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
