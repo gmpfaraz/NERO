@@ -26,7 +26,6 @@ const ProjectLayout: React.FC<ProjectLayoutProps> = ({ children }) => {
 
   return (
     <Layout
-      showSidebar={true}
       header={id && project ? <ProjectHeader projectName={project.name} /> : undefined}
     >
       <div className="transition-opacity duration-300 ease-in-out">
